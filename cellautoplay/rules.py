@@ -1,5 +1,7 @@
 from random import choice, randint
 import sys
+flush = sys.stdout.flush
+write = sys.stdout.write
 from time import sleep
 
 import numpy
@@ -14,6 +16,8 @@ class Rule(object):
         self.sleep_time = sleep_time
         self.other_args = kwargs
         self.initial_grid = self.initialize_grid(self.make_grid())
+        height, width = shape
+        self.border = '-' * width
 
     def make_grid(self, shape=None):
         if shape is None:
@@ -75,9 +79,8 @@ class Genesis(Rule):
         return grid
 
     def print_grid(self, grid):
-        write = sys.stdout.write
+        chars = []
         for row in grid:
-            chars = []
             for c in row:
                 if c == 0:
                     chars.append(' ')
@@ -91,9 +94,9 @@ class Genesis(Rule):
                     chars.append('A')
                 else:
                     chars.append('E')
-            write(''.join(chars))
-            write('\n')
-        sys.stdout.flush()
+        chars.append('\n')
+        write(''.join(chars))
+        flush()
 
     def evolve(self, grid, new_grid, r, c):
         age = grid[r,c]
@@ -178,22 +181,15 @@ class GameOfLife(Rule):
         return c < r
 
     def print_grid(self, grid):
-        write = sys.stdout.write
-        height, width = grid.shape
-        write(' ')
-        write('-' * width)
-        write(' \n')
+        chars = [' ', self.border, ' \n']
+        append = chars.append
         for row in grid:
-            chars = ['|']
-            for c in row:
-                chars.append('*' if c else ' ')
-            chars.append('|')
-            write(''.join(chars))
-            write('\n')
-        write(' ')
-        write('-' * width)
-        write(' \n')
-        sys.stdout.flush()
+            append('|')
+            chars += [('*' if c else ' ') for c in row]
+            append('|\n')
+        chars += [' ', self.border, ' \n']
+        write(''.join(chars))
+        flush()
 
     def evolve(self, grid, new_grid, r, c):
         val = grid[r,c]
