@@ -5,7 +5,7 @@ import sys
 from cellautoplay import rules
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--rule', '-R', required=True)
     parser.add_argument('--rows', '-r', type=int, default=21)
@@ -13,7 +13,11 @@ def main():
     parser.add_argument('--generations', '-g', type=int, default=20*(2**30))
     parser.add_argument('--sleep-time', '-t', type=float, default=.1)
     parser.add_argument('kwargs', nargs='*')
-    args = parser.parse_args()
+
+    if argv:
+        args = parser.parse_args(argv)
+    else:
+        args = parser.parse_args()
 
     RuleType = getattr(rules, args.rule)
 
@@ -39,4 +43,5 @@ def main():
     return 1
 
 
-sys.exit(main())
+if __name__ == '__main__':
+    sys.exit(main())
