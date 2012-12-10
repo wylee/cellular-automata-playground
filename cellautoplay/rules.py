@@ -14,8 +14,7 @@ class Rule(object):
         self.shape = shape  # (rows, cols) == (height, width)
         self.generations = generations
         self.sleep_time = sleep_time
-        self.other_args = kwargs
-        self.initial_grid = self.initialize_grid(self.make_grid())
+        self.initial_grid = self.initialize_grid(self.make_grid(), **kwargs)
         height, width = shape
         self.border = '-' * width
 
@@ -143,15 +142,14 @@ class GameOfLife(Rule):
 
     cell_type = numpy.bool
 
-    def initialize_grid(self, grid):
-        initializer_name = self.other_args.get('initializer')
-        if initializer_name:
-            initializer = getattr(self, 'initializer_' + initializer_name)
+    def initialize_grid(self, grid, initializer=None, **kwargs):
+        if initializer:
+            initializer = getattr(self, 'initializer_{0}'.format(initializer))
         else:
             initializer = lambda grid, r, c: randint(0, 1)
         for r, row in enumerate(grid):
             for c, val in enumerate(row):
-                grid[r,c] = initializer(grid, r, c)
+                grid[r,c] = initializer(grid, r, c, **kwargs)
         return grid
 
     def initializer_all_cells(self, grid, r, c):
@@ -160,16 +158,13 @@ class GameOfLife(Rule):
     def initializer_every_other_row(self, grid, r, c):
         return r % 2
 
-    def initializer_first_n_cols(self, grid, r, c):
-        n = int(self.other_args.get('n', 2))
+    def initializer_first_n_cols(self, grid, r, c, n=2):
         return c < n
 
-    def initializer_last_n_cols(self, grid, r, c):
-        n = int(self.other_args.get('n', 2))
+    def initializer_last_n_cols(self, grid, r, c, n=2):
         return self.shape[1] - c <= n
 
-    def initializer_border(self, grid, r, c):
-        n = int(self.other_args.get('n', 2))
+    def initializer_border(self, grid, r, c, n=2):
         return (
             (r < n) or
             (c < n) or
