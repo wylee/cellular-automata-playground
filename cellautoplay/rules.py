@@ -162,7 +162,7 @@ class GameOfLife(Rule):
 
     def initializer_first_n_cols(self, grid, r, c):
         n = int(self.other_args.get('n', 2))
-        return c < 2
+        return c < n
 
     def initializer_last_n_cols(self, grid, r, c):
         n = int(self.other_args.get('n', 2))
