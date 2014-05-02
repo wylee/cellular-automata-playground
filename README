@@ -11,8 +11,7 @@ mesmerizing.
 Installation
 ============
 
-The target Python version is 2.7; other versions might work, too, but I've
-never tested them.
+Targets Python 3; Python 2.7 should work too.
 
 NumPy is the only dependency. If you're running Linux, you probably won't need
 to do anything special; just easy_install the package and you should be good to
