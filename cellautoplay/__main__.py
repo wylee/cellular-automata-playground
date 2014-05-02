@@ -38,8 +38,8 @@ def main(argv=None):
     for generation in rule:
         print_grid(generation)
 
-    print '\n' * args.rows
-    print 'Game over.'
+    print('\n' * args.rows)
+    print('Game over.')
     return 1
 
 
