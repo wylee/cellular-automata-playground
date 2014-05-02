@@ -143,6 +143,8 @@ class GameOfLife(Rule):
     cell_type = numpy.bool
 
     def initialize_grid(self, grid, initializer=None, **kwargs):
+        if 'n' in kwargs:
+            kwargs['n'] = int(kwargs['n'])
         if initializer:
             initializer = getattr(self, 'initializer_{0}'.format(initializer))
         else:
