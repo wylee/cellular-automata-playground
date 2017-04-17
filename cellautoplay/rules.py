@@ -42,13 +42,14 @@ class Rule(object):
         grid = self.initial_grid
         height, width = grid.shape
         evolve = self.evolve
+        make_grid = self.make_grid
         sleep_time = self.sleep_time
         sum = grid.sum()
         generation, generations = 0, self.generations
         while sum and generation < generations:
             yield grid
             sleep(sleep_time)
-            new_grid = self.make_grid()
+            new_grid = make_grid()
             for r in range(height):
                 for c in range(width):
                     evolve(grid, new_grid, r, c)
