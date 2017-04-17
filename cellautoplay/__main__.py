@@ -1,15 +1,20 @@
 import argparse
 import pickle
 import sys
+from shutil import get_terminal_size
 
 from cellautoplay import rules
 
 
 def main(argv=None):
+    term_size = get_terminal_size()
+    default_rows = term_size.lines - 3
+    default_columns = term_size.columns - 2
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--rule', '-R', required=True)
-    parser.add_argument('--rows', '-r', type=int, default=21)
-    parser.add_argument('--cols', '-c', type=int, default=78)
+    parser.add_argument('--rows', '-r', type=int, default=default_rows)
+    parser.add_argument('--cols', '-c', type=int, default=default_columns)
     parser.add_argument('--generations', '-g', type=int, default=20*(2**30))
     parser.add_argument('--sleep-time', '-t', type=float, default=.1)
     parser.add_argument('kwargs', nargs='*')
