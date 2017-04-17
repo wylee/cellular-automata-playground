@@ -1,7 +1,5 @@
-from random import choice, randint
 import sys
-flush = sys.stdout.flush
-write = sys.stdout.write
+from random import choice, randint
 from time import sleep
 
 import numpy
@@ -77,7 +75,7 @@ class Genesis(Rule):
         neighborhood[eve_row,eve_col] = 18
         return grid
 
-    def print_grid(self, grid):
+    def print_grid(self, grid, write=sys.stdout.write, flush=sys.stdout.flush):
         chars = []
         for row in grid:
             for c in row:
@@ -177,7 +175,7 @@ class GameOfLife(Rule):
     def initializer_x(self, grid, r, c):
         return c < r
 
-    def print_grid(self, grid):
+    def print_grid(self, grid, write=sys.stdout.write, flush=sys.stdout.flush):
         chars = [' ', self.border, ' \n']
         append = chars.append
         for row in grid:
