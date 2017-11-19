@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import find_packages, setup
 
 
 setup(
@@ -7,11 +7,12 @@ setup(
     description='Console-based script for playing with cellular automata.',
     author='Wyatt L Baldwin',
     author_email='self@wyattbaldwin.com',
-    url='https://bitbucket.org/wyatt/cellular-automata-playground',
-    install_requires=('numpy',),
-    packages=('cellautoplay',),
+    url='https://github.com/wylee/cellular-automata-playground',
+    install_requires=['numpy'],
+    packages=find_packages(),
     entry_points="""
     [console_scripts]
     cellauto = cellautoplay.__main__:main
+
     """
 )
