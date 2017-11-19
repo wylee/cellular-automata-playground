@@ -40,8 +40,12 @@ def main(argv=None):
     with open('cellular_automaton_grid.pickle', 'wb') as fp:
         pickle.dump(rule.initial_grid, fp)
 
-    for generation in rule:
-        print_grid(generation)
+    try:
+        for generation in rule:
+            print_grid(generation)
+    except KeyboardInterrupt:
+        print('\nAborted')
+        return 0
 
     print('\n' * args.rows)
     print('Game over.')
