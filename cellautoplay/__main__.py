@@ -34,7 +34,10 @@ def main(argv=None):
     rule = RuleType(
         (args.rows, args.cols), args.generations, args.sleep_time, **kwargs)
 
-    print_grid = rule.print_grid
+    if hasattr(rule, 'get_grid_printer'):
+        print_grid = rule.get_grid_printer()
+    else:
+        print_grid = rule.print_grid
 
     # Save grid in case it produces super cool results
     with open('cellular_automaton_grid.pickle', 'wb') as fp:

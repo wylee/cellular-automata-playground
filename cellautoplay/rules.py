@@ -1,3 +1,4 @@
+import os
 import sys
 from random import choice, randint
 from time import sleep
@@ -176,16 +177,34 @@ class GameOfLife(Rule):
     def initializer_x(self, grid, r, c):
         return c < r
 
-    def print_grid(self, grid, write=sys.stdout.write, flush=sys.stdout.flush):
-        chars = [' ', self.border, ' \n']
-        append = chars.append
-        for row in grid:
-            append('|')
-            chars += [('*' if c else ' ') for c in row]
-            append('|\n')
-        chars += [' ', self.border, ' \n']
-        write(''.join(chars))
-        flush()
+    def get_grid_printer(self):
+        rows, cols = self.shape
+        height, width = rows + 2, cols + 3
+        header = ' {self.border} \n'.format(self=self).encode()
+
+        # (False choice, True choice)
+        # XXX: Seems to be slightly faster than a ternary.
+        choices = (32, 42)
+
+        lines = [header]
+        proto = bytearray(width)
+        proto[0], proto[-2], proto[-1] = 124, 124, 10
+        lines.extend(proto.copy() for _ in range(rows))
+        lines.append(header)
+
+        stdout = os.fdopen(sys.stdout.fileno(), 'wb')
+        writelines = stdout.writelines
+        flush = stdout.flush
+
+        def print_grid(grid, lines=lines, choices=choices, writelines=writelines, flush=flush):
+            for i, row in enumerate(grid, 1):
+                line = lines[i]
+                for j, is_on in enumerate(row, 1):
+                    line[j] = choices[is_on]
+            writelines(lines)
+            flush()
+
+        return print_grid
 
     def evolve(self, grid, new_grid, r, c):
         val = grid[r,c]
