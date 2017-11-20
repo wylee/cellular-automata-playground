@@ -75,24 +75,25 @@ class Genesis(Rule):
         neighborhood[eve_row,eve_col] = 18
         return grid
 
-    def print_grid(self, grid, write=sys.stdout.write, flush=sys.stdout.flush):
-        chars = []
+    def print_grid(self, grid, write=sys.stdout.writelines, flush=sys.stdout.flush):
+        chars = ['\n']
+        append = chars.append
         for row in grid:
             for c in row:
                 if c == 0:
-                    chars.append(' ')
+                    append(' ')
                 elif c == 1:
-                    chars.append('B')
+                    append('B')
                 elif c < 18:
-                    chars.append('C')
+                    append('C')
                 elif c < 41:
-                    chars.append('M')
+                    append('M')
                 elif c < 61:
-                    chars.append('A')
+                    append('A')
                 else:
-                    chars.append('E')
-        chars.append('\n')
-        write(''.join(chars))
+                    append('E')
+            append('\n')
+        write(chars)
         flush()
 
     def evolve(self, grid, new_grid, r, c):
