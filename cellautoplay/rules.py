@@ -100,12 +100,13 @@ class Genesis(Rule):
         age = grid[r,c]
         neighborhood = self.get_moore_neighborhood(grid, (r, c), n=2)
         neighborhood_h, neighborhood_w = neighborhood.shape
+        flat_neighborhood = neighborhood.flat
 
         if age:
             age += 1
             new_grid[r,c] = age
 
-        if all((17 < a < 41) for a in neighborhood.flat):
+        if all((17 < a < 41) for a in flat_neighborhood):
             # If the neighborhood is all adults, *maybe* kill off 1 - 3 people.
             if choice([False]*99 + [True]):
                 for i in range(randint(1, 3)):
@@ -121,7 +122,7 @@ class Genesis(Rule):
             # possible. There needs to be two or more adults and one open cell
             # in the neighborhood for birth to take place.
             mating_age_adults = [
-                a for a in neighborhood.flat
+                a for a in flat_neighborhood
                 if 17 < a < randint(36, 46)
             ]
             num_mating_age_adults = len(mating_age_adults)
