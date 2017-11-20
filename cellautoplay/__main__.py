@@ -8,8 +8,8 @@ from cellautoplay import rules
 
 def main(argv=None):
     term_size = get_terminal_size()
-    default_rows = term_size.lines - 3
-    default_columns = term_size.columns - 2
+    default_rows = term_size.lines - 1
+    default_columns = term_size.columns
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--rule', '-R', required=True)

@@ -14,8 +14,6 @@ class Rule(object):
         self.generations = generations
         self.sleep_time = sleep_time
         self.initial_grid = self.initialize_grid(self.make_grid(), **kwargs)
-        height, width = shape
-        self.border = '-' * width
 
     def make_grid(self, shape=None):
         if shape is None:
@@ -179,27 +177,24 @@ class GameOfLife(Rule):
 
     def get_grid_printer(self):
         rows, cols = self.shape
-        height, width = rows + 2, cols + 3
-        header = ' {self.border} \n'.format(self=self).encode()
+        height, width = rows + 1, cols + 1
 
         # (False choice, True choice)
         # XXX: Seems to be slightly faster than a ternary.
         choices = (32, 42)
 
-        lines = [header]
-        proto = bytearray(width)
-        proto[0], proto[-2], proto[-1] = 124, 124, 10
-        lines.extend(proto.copy() for _ in range(rows))
-        lines.append(header)
+        lines = [bytearray(width) for _ in range(rows)]
+        for line in lines:
+            line[-1] = 10
 
         stdout = os.fdopen(sys.stdout.fileno(), 'wb')
         writelines = stdout.writelines
         flush = stdout.flush
 
         def print_grid(grid, lines=lines, choices=choices, writelines=writelines, flush=flush):
-            for i, row in enumerate(grid, 1):
+            for i, row in enumerate(grid):
                 line = lines[i]
-                for j, is_on in enumerate(row, 1):
+                for j, is_on in enumerate(row):
                     line[j] = choices[is_on]
             writelines(lines)
             flush()
