@@ -177,14 +177,14 @@ class GameOfLife(Rule):
 
     def get_grid_printer(self):
         rows, cols = self.shape
-        height, width = rows + 1, cols + 1
 
         # (False choice, True choice)
         # XXX: Seems to be slightly faster than a ternary.
         choices = (32, 42)
 
-        lines = [bytearray(width) for _ in range(rows)]
-        for line in lines:
+        lines = [b'\n']
+        lines.extend(bytearray(cols + 1) for _ in range(rows))
+        for line in lines[1:]:
             line[-1] = 10
 
         stdout = os.fdopen(sys.stdout.fileno(), 'wb')
@@ -192,7 +192,7 @@ class GameOfLife(Rule):
         flush = stdout.flush
 
         def print_grid(grid, lines=lines, choices=choices, writelines=writelines, flush=flush):
-            for i, row in enumerate(grid):
+            for i, row in enumerate(grid, 1):
                 line = lines[i]
                 for j, is_on in enumerate(row):
                     line[j] = choices[is_on]
