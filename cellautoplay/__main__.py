@@ -16,7 +16,7 @@ def main(argv=None):
     parser.add_argument('--rows', '-r', type=int, default=default_rows)
     parser.add_argument('--cols', '-c', type=int, default=default_columns)
     parser.add_argument('--generations', '-g', type=int, default=20*(2**30))
-    parser.add_argument('--sleep-time', '-t', type=float, default=.1)
+    parser.add_argument('--sleep-time', '-t', type=float, default=0.1)
     parser.add_argument('kwargs', nargs='*')
 
     if argv:
