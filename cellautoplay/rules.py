@@ -21,13 +21,33 @@ class Rule(object):
         return zeros(shape, dtype=self.cell_type)
 
     def get_moore_neighborhood(self, grid, coords, n=1):
-        h, w = grid.shape
+        width = 1 + 2 * n
+        neighborhood = self.make_grid((width, width))
+
         r, c = coords
-        r_start = max(r - n, 0)
-        r_end = min(r + n + 1, h - 1)
-        c_start = max(c - n, 0)
-        c_end = min(c + n + 1, w - 1)
-        return grid[r_start:r_end,c_start:c_end]
+
+        r_start = r - n
+        r_end = r + n + 1
+        c_start = c - n
+        c_end = c + n + 1
+
+        n_r_start = 0
+        n_c_start = 0
+
+        if r_start < 0:
+            r_start = 0
+            n_r_start = -r_start
+
+        if c_start < 0:
+            c_start = 0
+            n_c_start = -c_start
+
+        grid_slice = grid[r_start:r_end,c_start:c_end]
+        h, w = grid_slice.shape
+        n_r_end, n_c_end = n_r_start + h, n_c_start + w
+
+        neighborhood[n_r_start:n_r_end,n_c_start:n_c_end] = grid_slice
+        return neighborhood
 
     def get_empty_cells_in_neighborhood(self, neighborhood):
         empty_cells = []
