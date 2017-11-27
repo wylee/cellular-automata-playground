@@ -1,10 +1,14 @@
 import os
 import sys
 from random import choice, randint
+from shutil import get_terminal_size
 from time import sleep
 
 import numpy
 from numpy import zeros
+
+
+term_width, term_height = get_terminal_size()
 
 
 class Rule(object):
@@ -200,6 +204,14 @@ class GameOfLife(Rule):
             (r == 2 and c == 3) or
             (r == 3 and c in (1, 2, 3))
         )
+
+    def initializer_square(self, grid, r, c, n=(term_height // 2)):
+        rows, cols = self.shape
+        top = (cols - n) // 2
+        bottom = top + n
+        left = (rows - n) // 2
+        right = left + n
+        return (left < r < right) and (top < c < bottom)
 
     def initializer_x(self, grid, r, c):
         return c < r
