@@ -190,6 +190,12 @@ class GameOfLife(Rule):
     def initializer_last_n_cols(self, grid, r, c, n=2):
         return self.shape[1] - c <= n
 
+    def initializer_first_and_last_n_cols(self, grid, r, c, n=2):
+        return (
+            (c < n) or
+            (self.shape[1] - c <= n)
+        )
+
     def initializer_border(self, grid, r, c, n=2):
         return (
             (r < n) or
