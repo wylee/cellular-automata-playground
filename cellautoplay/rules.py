@@ -206,20 +206,13 @@ class GameOfLife(Rule):
     def evolve(self, grid, new_grid, r, c):
         val = grid[r,c]
         neighborhood = self.get_moore_neighborhood(grid, (r, c), n=1)
-        neighborhood_h, neighborhood_w = neighborhood.shape
-
-        num_alive = sum(1 for i in neighborhood.flat if i)
-        if val:
-            num_alive -= 1
-        num_dead = 9 - num_alive
-
-        if num_alive not in (2, 3):
-            new_val = 0
-        elif val == 0 and num_alive == 3:
+        num_alive = neighborhood.sum()
+        if num_alive == 3:
             new_val = 1
-        else:
+        elif num_alive == 4:
             new_val = val
-
+        else:
+            new_val = 0
         new_grid[r,c] = new_val
 
 
