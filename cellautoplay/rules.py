@@ -194,6 +194,13 @@ class GameOfLife(Rule):
             (self.shape[1] - c <= n)
         )
 
+    def initializer_glider(self, grid, r, c):
+        return (
+            (r == 1 and c == 2) or
+            (r == 2 and c == 3) or
+            (r == 3 and c in (1, 2, 3))
+        )
+
     def initializer_x(self, grid, r, c):
         return c < r
 
