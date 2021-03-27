@@ -12,7 +12,6 @@ term_width, term_height = get_terminal_size()
 
 
 class Rule(object):
-
     def __init__(self, shape, generations, sleep_time, **kwargs):
         self.shape = shape  # (rows, cols) == (height, width)
         self.generations = generations
@@ -46,11 +45,11 @@ class Rule(object):
             c_start = 0
             n_c_start = -c_start
 
-        grid_slice = grid[r_start:r_end,c_start:c_end]
+        grid_slice = grid[r_start:r_end, c_start:c_end]
         h, w = grid_slice.shape
         n_r_end, n_c_end = n_r_start + h, n_c_start + w
 
-        neighborhood[n_r_start:n_r_end,n_c_start:n_c_end] = grid_slice
+        neighborhood[n_r_start:n_r_end, n_c_start:n_c_end] = grid_slice
         return neighborhood
 
     def get_empty_cells_in_neighborhood(self, neighborhood):
@@ -89,56 +88,56 @@ class Genesis(Rule):
         height, width = grid.shape
         adam_row = randint(0, height - 1)
         adam_col = randint(0, width - 1)
-        grid[adam_row,adam_col] = 18
+        grid[adam_row, adam_col] = 18
         neighborhood = self.get_moore_neighborhood(grid, (adam_row, adam_col))
         val = True
         while val:
             eve_row = randint(0, neighborhood.shape[0] - 1)
             eve_col = randint(0, neighborhood.shape[1] - 1)
-            val = neighborhood[eve_row,eve_col]
-        neighborhood[eve_row,eve_col] = 18
+            val = neighborhood[eve_row, eve_col]
+        neighborhood[eve_row, eve_col] = 18
         return grid
 
     def print_grid(self, grid, write=sys.stdout.writelines, flush=sys.stdout.flush):
-        chars = ['\n']
+        chars = ["\n"]
         append = chars.append
         for row in grid:
             for c in row:
                 if c == 0:
-                    append(' ')
+                    append(" ")
                 elif c == 1:
-                    append('B')
+                    append("B")
                 elif c < 18:
-                    append('C')
+                    append("C")
                 elif c < 41:
-                    append('M')
+                    append("M")
                 elif c < 61:
-                    append('A')
+                    append("A")
                 else:
-                    append('E')
-            append('\n')
+                    append("E")
+            append("\n")
         write(chars)
         flush()
 
     def evolve(self, grid, new_grid, r, c):
-        age = grid[r,c]
+        age = grid[r, c]
         neighborhood = self.get_moore_neighborhood(grid, (r, c), n=2)
         neighborhood_h, neighborhood_w = neighborhood.shape
         flat_neighborhood = neighborhood.flat
 
         if age:
             age += 1
-            new_grid[r,c] = age
+            new_grid[r, c] = age
 
         if all((17 < a < 41) for a in flat_neighborhood):
             # If the neighborhood is all adults, *maybe* kill off 1 - 3 people.
-            if choice([False]*99 + [True]):
+            if choice([False] * 99 + [True]):
                 for i in range(randint(1, 3)):
                     kill_row = randint(0, neighborhood_h - 1)
                     kill_col = randint(0, neighborhood_w - 1)
-                    neighborhood[kill_row,kill_col] = 0
+                    neighborhood[kill_row, kill_col] = 0
 
-        if not grid[r,c]:  # Current subject might have been killed off.
+        if not grid[r, c]:  # Current subject might have been killed off.
             age = 0
 
         if 17 < age < randint(36, 46):
@@ -146,8 +145,7 @@ class Genesis(Rule):
             # possible. There needs to be two or more adults and one open cell
             # in the neighborhood for birth to take place.
             mating_age_adults = [
-                a for a in flat_neighborhood
-                if 17 < a < randint(36, 46)
+                a for a in flat_neighborhood if 17 < a < randint(36, 46)
             ]
             num_mating_age_adults = len(mating_age_adults)
             if 1 < num_mating_age_adults < neighborhood.size:
@@ -159,7 +157,7 @@ class Genesis(Rule):
             # Die. This cell can now be reused for birth.
             age = 0
 
-        new_grid[r,c] = age
+        new_grid[r, c] = age
 
 
 class GameOfLife(Rule):
@@ -167,15 +165,15 @@ class GameOfLife(Rule):
     cell_type = numpy.bool
 
     def initialize_grid(self, grid, initializer=None, **kwargs):
-        if 'n' in kwargs:
-            kwargs['n'] = int(kwargs['n'])
+        if "n" in kwargs:
+            kwargs["n"] = int(kwargs["n"])
         if initializer:
-            initializer = getattr(self, 'initializer_{0}'.format(initializer))
+            initializer = getattr(self, "initializer_{0}".format(initializer))
         else:
             initializer = lambda grid, r, c: randint(0, 1)
         for r, row in enumerate(grid):
             for c, val in enumerate(row):
-                grid[r,c] = initializer(grid, r, c, **kwargs)
+                grid[r, c] = initializer(grid, r, c, **kwargs)
         return grid
 
     def initializer_all_cells(self, grid, r, c):
@@ -191,25 +189,15 @@ class GameOfLife(Rule):
         return self.shape[1] - c <= n
 
     def initializer_first_and_last_n_cols(self, grid, r, c, n=2):
-        return (
-            (c < n) or
-            (self.shape[1] - c <= n)
-        )
+        return (c < n) or (self.shape[1] - c <= n)
 
     def initializer_border(self, grid, r, c, n=2):
         return (
-            (r < n) or
-            (c < n) or
-            (self.shape[0] - r <= n) or
-            (self.shape[1] - c <= n)
+            (r < n) or (c < n) or (self.shape[0] - r <= n) or (self.shape[1] - c <= n)
         )
 
     def initializer_glider(self, grid, r, c):
-        return (
-            (r == 1 and c == 2) or
-            (r == 2 and c == 3) or
-            (r == 3 and c in (1, 2, 3))
-        )
+        return (r == 1 and c == 2) or (r == 2 and c == 3) or (r == 3 and c in (1, 2, 3))
 
     def initializer_square(self, grid, r, c, n=(term_height // 2)):
         rows, cols = self.shape
@@ -229,16 +217,18 @@ class GameOfLife(Rule):
         # XXX: Seems to be slightly faster than a ternary.
         choices = (32, 42)
 
-        lines = [b'\n']
+        lines = [b"\n"]
         lines.extend(bytearray(cols + 1) for _ in range(rows))
         for line in lines[1:]:
             line[-1] = 10
 
-        stdout = os.fdopen(sys.stdout.fileno(), 'wb')
+        stdout = os.fdopen(sys.stdout.fileno(), "wb")
         writelines = stdout.writelines
         flush = stdout.flush
 
-        def print_grid(grid, lines=lines, choices=choices, writelines=writelines, flush=flush):
+        def print_grid(
+            grid, lines=lines, choices=choices, writelines=writelines, flush=flush
+        ):
             for i, row in enumerate(grid, 1):
                 line = lines[i]
                 for j, is_on in enumerate(row):
@@ -249,7 +239,7 @@ class GameOfLife(Rule):
         return print_grid
 
     def evolve(self, grid, new_grid, r, c):
-        val = grid[r,c]
+        val = grid[r, c]
         neighborhood = self.get_moore_neighborhood(grid, (r, c), n=1)
         num_alive = neighborhood.sum()
         if num_alive == 3:
@@ -258,7 +248,7 @@ class GameOfLife(Rule):
             new_val = val
         else:
             new_val = 0
-        new_grid[r,c] = new_val
+        new_grid[r, c] = new_val
 
 
 elementary_rules = {}
