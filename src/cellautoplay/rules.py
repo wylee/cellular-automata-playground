@@ -33,7 +33,7 @@ class Rule(object):
         r_end = r + n + 1
         c_start = c - n
         c_end = c + n + 1
-
+ 
         n_r_start = 0
         n_c_start = 0
 
@@ -86,16 +86,12 @@ class Genesis(Rule):
 
     def initialize_grid(self, grid):
         height, width = grid.shape
-        adam_row = randint(0, height - 1)
-        adam_col = randint(0, width - 1)
+        adam_row = randint(1, height - 2)
+        adam_col = randint(1, width - 2)
+        eve_row = adam_row + choice((1, -1))
+        eve_col = adam_col + choice((1, -1))
         grid[adam_row, adam_col] = 18
-        neighborhood = self.get_moore_neighborhood(grid, (adam_row, adam_col))
-        val = True
-        while val:
-            eve_row = randint(0, neighborhood.shape[0] - 1)
-            eve_col = randint(0, neighborhood.shape[1] - 1)
-            val = neighborhood[eve_row, eve_col]
-        neighborhood[eve_row, eve_col] = 18
+        grid[eve_row, eve_col] = 18
         return grid
 
     def print_grid(self, grid, write=sys.stdout.writelines, flush=sys.stdout.flush):
@@ -103,59 +99,124 @@ class Genesis(Rule):
         append = chars.append
         for row in grid:
             for c in row:
-                if c == 0:
-                    append(" ")
-                elif c == 1:
-                    append("B")
+                if c < 0:
+                    append("X")  # Contaminated cell
+                elif c == 0:
+                    append(" ")  # Empty cell
+                elif c in (1, 2):
+                    append("B")  # Baby
+                elif c < 13:
+                    append("C")  # Child
                 elif c < 18:
-                    append("C")
-                elif c < 41:
-                    append("M")
-                elif c < 61:
-                    append("A")
+                    append("T")  # Teenager
+                elif c < 46:
+                    append("M")  # Mating age adult
+                elif c < 62:
+                    append("A")  # Adult
                 else:
-                    append("E")
+                    append("E")  # Elder
             append("\n")
         write(chars)
         flush()
 
     def evolve(self, grid, new_grid, r, c):
         age = grid[r, c]
+
+        if age != 0:
+            # Disallow spontaneous birth.
+            age += 1
+
+        h, w = grid.shape
+        i, j = h - 1, w - 1
         neighborhood = self.get_moore_neighborhood(grid, (r, c), n=2)
         neighborhood_h, neighborhood_w = neighborhood.shape
         flat_neighborhood = neighborhood.flat
 
-        if age:
-            age += 1
-            new_grid[r, c] = age
-
-        if all((17 < a < 41) for a in flat_neighborhood):
-            # If the neighborhood is all adults, *maybe* kill off 1 - 3 people.
-            if choice([False] * 99 + [True]):
+        # If the neighborhood is all adults, *maybe* kill off 1 - 3 people.
+        if all((17 < neighbor_age < 41) for neighbor_age in flat_neighborhood):
+            if randint(1, 100) == 100:
                 for i in range(randint(1, 3)):
-                    kill_row = randint(0, neighborhood_h - 1)
-                    kill_col = randint(0, neighborhood_w - 1)
-                    neighborhood[kill_row, kill_col] = 0
+                    kill_row = r - 2 + randint(0, 4)
+                    kill_col = c - 2 + randint(0, 4)
+                    if kill_row < 0:
+                        kill_row = h + kill_row
+                    elif kill_row > i:
+                        kill_row = kill_row - h
+                    if kill_col < 0:
+                        kill_col = w + kill_col
+                    elif kill_col > j:
+                        kill_col = kill_col - w
+                    new_grid[kill_row, kill_col] = 0
+                    if (kill_row, kill_col) == (r, c):
+                        age = 0
 
-        if not grid[r, c]:  # Current subject might have been killed off.
-            age = 0
-
+        # If the current subject is a mating age adult, see if mating is
+        # possible. There needs to be two or more adults and one open
+        # cell in the neighborhood for birth to take place.
         if 17 < age < randint(36, 46):
-            # If the current subject is a mating age adult, see if mating is
-            # possible. There needs to be two or more adults and one open cell
-            # in the neighborhood for birth to take place.
-            mating_age_adults = [
-                a for a in flat_neighborhood if 17 < a < randint(36, 46)
-            ]
-            num_mating_age_adults = len(mating_age_adults)
+            num_mating_age_adults = sum(
+                1
+                for neighbor_age in flat_neighborhood
+                if (17 < neighbor_age < randint(36, 46))
+            )
             if 1 < num_mating_age_adults < neighborhood.size:
                 empty_cells = self.get_empty_cells_in_neighborhood(neighborhood)
                 if empty_cells:
-                    birth_cell = choice(empty_cells)
-                    neighborhood[birth_cell] = 1
+                    birth_row, birth_col = choice(empty_cells)
+                    birth_row = r - 2 + birth_row
+                    birth_col = c - 2 + birth_col
+                    if birth_row < 0:
+                        birth_row = h + birth_row
+                    elif birth_row > i:
+                        birth_row = birth_row - h
+                    if birth_col < 0:
+                        birth_col = w + birth_col
+                    elif birth_col > j:
+                        birth_col = birth_col - w
+                    new_grid[birth_row, birth_col] = 1
         elif age > randint(65, 100):
-            # Die. This cell can now be reused for birth.
+            # Die of natural causes. This cell can now be reused for
+            # birth.
             age = 0
+
+        if age > 0 and randint(1, 100000) == 100000:
+            # Die of random cause, regardless of age.
+            age = 0
+
+        # Every so often, simulate some kind of cataclysmic event. This
+        # kills anyone in the affected zone and makes it uninhabitable
+        # for 1 to 100 years.
+        cat_row = randint(0, h + 50000)
+        cat_col = randint(0, w + 50000)
+        if cat_row < h and cat_col < w:
+            new_grid[cat_row, cat_col] = 0
+            row_dist = randint(1, int(h / 8) or 1)
+            col_dist = randint(1, int(w / 8) or 1)
+            start_row = cat_row - row_dist
+            end_row = cat_row + row_dist
+            start_col = cat_col - col_dist
+            end_col = cat_col + col_dist
+            contamination_level = randint(-100, -1)
+            while start_row < end_row:
+                while start_col < end_col:
+                    if start_row < 0:
+                        kill_row = h + start_row
+                    elif start_row > i:
+                        kill_row = start_row - h
+                    else:
+                        kill_row = start_row
+                    if start_col < 0:
+                        kill_col = w + start_col
+                    elif start_col > i:
+                        kill_col = start_col - w
+                    else:
+                        kill_col = start_col
+                    new_grid[kill_row, kill_col] = contamination_level
+                    if (kill_row, kill_col) == (r, c):
+                        age = contamination_level
+                    start_col += 1
+                start_row += 1
+                start_col = cat_col - col_dist
 
         new_grid[r, c] = age
 
